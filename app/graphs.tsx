@@ -84,7 +84,7 @@ function Frame({
   tall?: boolean;
 }) {
   // Inline SVG needs an image role; replacing it with img would discard the diagram.
-  // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+  /* oxlint-disable jsx-a11y/prefer-tag-over-role */
   return (
     <svg
       className="transaction-map"
