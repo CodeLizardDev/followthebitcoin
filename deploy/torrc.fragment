@@ -1,0 +1,6 @@
+# Append to the existing torrc after installing Tor from its supported packages.
+# Tor creates the private service keys and the real hostname in this directory.
+# Never commit, publish or copy the private keys into the web root.
+HiddenServiceDir /var/lib/tor/follow-the-bitcoin/
+HiddenServiceVersion 3
+HiddenServicePort 80 127.0.0.1:4317

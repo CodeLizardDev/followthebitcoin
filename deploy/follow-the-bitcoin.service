@@ -1,0 +1,30 @@
+[Unit]
+Description=Follow the Bitcoin static site and aggregate page counter
+After=network.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+WorkingDirectory=/opt/follow-the-bitcoin
+ExecStart=/usr/bin/node /opt/follow-the-bitcoin/server/serve.mjs
+Environment=HOST=127.0.0.1
+Environment=PORT=4317
+Environment=STATIC_DIR=/opt/follow-the-bitcoin/dist/client
+Environment=COUNT_FILE=/var/lib/follow-the-bitcoin/counts.json
+EnvironmentFile=-/etc/follow-the-bitcoin.env
+StateDirectory=follow-the-bitcoin
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
