@@ -1,160 +1,175 @@
 # Free Cloudflare Pages deployment
 
-The production configuration targets `https://followthebitcoin.pages.dev/`, with
-source at `https://github.com/CodeLizardDev/followthebitcoin`. The project does not
-need a purchased domain. This is a static release: no Pages Functions, database,
-paid Worker or Node server is deployed.
+Production: `https://followthebitcoin.pages.dev/`.
+Source: `https://github.com/CodeLizardDev/followthebitcoin`.
+The site uses Cloudflare Pages' native GitHub integration. Only static browser
+assets are published: no Pages Functions, database, paid Worker or Node server.
+No purchased domain is needed.
 
-## Initial deployment: Direct Upload
+## Native Git build settings
 
-Build the reviewed source locally with Node 24. Create or select **Workers &
-Pages → Create application → Pages → Direct Upload / Upload assets**. Use project
-name `followthebitcoin` and upload the **contents** of `dist/client/`, either as
-a folder or a ZIP whose root contains `index.html`, `_headers` and the assets.
-Do not upload the source archive or wrap the export inside an extra directory.
-There are no framework build settings, Functions bindings or runtime secrets for
-this dashboard upload.
+Authorize the Cloudflare GitHub application for the selected repository only.
+Create/select **Workers & Pages → Pages → Connect to Git** with these settings:
 
-`npm run build` includes the postbuild step that removes known build metadata,
-generates CSP response headers and audits the public output. Do not publish an
-unchecked raw framework build. After separate operator authentication, the
-equivalent CLI upload is
-`npx --no-install wrangler pages deploy dist/client --project-name followthebitcoin --branch main`.
-Pass the static directory directly: Pages does not accept a custom `--config`
-path. This static release needs no Wrangler configuration file. Keep a root
-Wrangler configuration absent so Vinext does not select its Workers build path.
+| Setting | Value |
+| --- | --- |
+| Project name | `followthebitcoin` |
+| Repository | `CodeLizardDev/followthebitcoin` |
+| Production branch | `main` |
+| Automatic production deployments | Enabled |
+| Preview deployments | None |
+| Pull-request comments | Disabled |
+| Framework preset | None |
+| Root directory | Repository root (`/`, or leave blank) |
+| Build output directory | `dist/client` |
+| Build image | v3 |
+| `NODE_VERSION` | `24.15.0` |
+| `SKIP_DEPENDENCY_INSTALL` | `1` |
+| Runtime bindings / build secrets | None |
 
-The initial dashboard upload remains a valid manual recovery path. Subsequent
-updates use the GitHub Actions workflow below. A Direct Upload project cannot be
-converted to Cloudflare Git integration; Wrangler-based CI deploys to the same
-existing project without installing another GitHub application or changing the
-public address.
+Set the two plain environment variables for production. No Cloudflare API token
+is needed in GitHub Actions or the Pages build: Cloudflare's GitHub application
+authenticates the native connection. Keep preview builds disabled; if they are
+deliberately enabled later, review their access and apply the same build settings.
 
-## Automatic production updates
+Use this complete build command:
 
-The `Review checks` workflow preserves the required `check` job. Pull requests
-lint, type-check, test, build and audit the static release without Cloudflare
-credentials. That job uploads only the checked `dist/client/` folder as an
-immutable artifact, with an attempt-specific name and seven-day retention.
+```sh
+npm ci --include=dev && npm run lint && npx --no-install tsc --noEmit && npm test && npm run build && npm run check:release
+```
 
-A separate `Deploy production` job runs only after a successful check on a push
-to `main`, or a manual `workflow_dispatch` targeting `main`. It uses the GitHub
-`production` environment, downloads that exact artifact by ID, rejects a digest
-mismatch, and reruns the release audit including the precise `index.html` /
-`_headers` script-hash agreement. It does not rebuild. Dependencies are installed
-from the lockfile with lifecycle scripts disabled before Cloudflare secrets are
-placed in any process environment. Deployment invokes the lockfile-pinned
-Wrangler with explicit project `followthebitcoin`, branch `main` and source SHA.
+Cloudflare sets up Node before executing the command. The committed `.nvmrc`
+contains the same version. Do not rely on `package.json`'s `engines` range to
+select Node: the v3 image does not detect runtime/package-manager versions from
+that field. npm comes with the selected Node release (Node 24.15.0 bundles npm
+11.12.1); leave `NPM_VERSION` unset rather than relying on an undocumented v3
+override. Check the reported Node/npm versions in the first native build log.
+`SKIP_DEPENDENCY_INSTALL=1` avoids an extra provider-managed install; `npm ci`
+uses the committed lockfile, and `--include=dev` retains the build/check tools.
 
-Workflow concurrency cancels older runs for the same ref. Immediately before
-uploading, the deployment compares its source SHA to the current GitHub `main`
-tip and skips an outdated revision. This also protects a manually retried old
-run. Keep protected-branch review and the required `check` status enabled; only
-trusted reviewed source belongs on `main`.
+`npm run build` automatically runs the postbuild step. It removes known build
+metadata, generates `_headers` from the exact emitted script bytes and audits
+the export. The final release check must succeed before Cloudflare uploads the
+output. Keep root Wrangler configuration absent so Vinext does not select a
+Workers build path. Preserve the static-export framework and Sites plugin setup.
 
-An account administrator must configure:
+Sources: [Git integration](https://developers.cloudflare.com/pages/get-started/git-integration/),
+[build image and version selection](https://developers.cloudflare.com/pages/configuration/build-image/),
+[Node 24.15.0 release](https://nodejs.org/en/blog/release/v24.15.0),
+[branch controls](https://developers.cloudflare.com/pages/configuration/branch-build-controls/),
+[response headers](https://developers.cloudflare.com/pages/configuration/headers/).
 
-1. A Cloudflare API token with **Account → Cloudflare Pages → Edit**, scoped to
-   the single account containing this project. No zone, DNS, billing or global
-   API-key permission is needed. This permission covers Pages projects in that
-   account, so protect and rotate the token as a deployment credential.
-2. GitHub Actions secrets named **`CLOUDFLARE_API_TOKEN`** and
-   **`CLOUDFLARE_ACCOUNT_ID`**, preferably in the **`production`** environment.
-   Store only secret values through GitHub's secret UI/API; never commit them,
-   put them in workflow arguments or paste them into logs.
-3. A `production` environment restricted to the `main` branch. No reviewer gate
-   is needed for the requested automatic updates; branch protection and CI remain
-   the source-review gate. Pull-request and non-main jobs must not access it.
+## Review and automatic publication
 
-To retry, open Actions → Review checks → Run workflow and select **main**. This
-checks and builds the current main revision before deployment. Rerunning a
-failed deployment job can reuse its checked artifact while it is retained, but
-still passes the current-tip guard. After seven days, run the workflow again to
-create a fresh checked artifact. Missing/expired credentials or provider errors
-fail the deployment job; the previous successful site stays available. Inspect
-the job and Cloudflare deployment status rather than treating a green check job
-alone as publication success. Dashboard upload or Pages rollback remains an
-operator recovery option.
+The GitHub `Review checks` workflow retains the required `check` job. Pull
+requests and `main` pushes lint, type-check, test, build and audit without
+Cloudflare credentials. The checked `dist/client/` folder remains available as
+an immutable artifact for seven days, with an attempt-specific name. It is a
+review/recovery artifact; GitHub Actions does not publish it. Manual workflow
+dispatch reruns review checks only.
 
-Leave Cloudflare Web Analytics, Zaraz, Rocket Loader and other HTML/script
-injection disabled. The release's same-origin CSP intentionally excludes
-analytics beacons. Hosting request metadata remains under Cloudflare's policies.
-The project's own daily counter does not run on Pages. No public `.onion` service
-is claimed by this deployment.
+Protect `main` with required CI, review and resolved conversations. When a
+reviewed change reaches `main`, native Cloudflare integration builds that source
+revision using the full command above. Cloudflare performs its own gated build;
+it does not wait for or download the GitHub Actions artifact. Failed checks or
+builds prevent that Pages build from publishing. Always inspect the Pages
+deployment outcome and source SHA before declaring an update live.
 
-Cloudflare Pages' free tier currently allows static asset requests without
-request charges and has quotas including monthly builds and file limits. This
-project requires no paid option. Check the provider's current plan before
-changing the architecture or enabling Functions.
+The former Direct Upload project cannot be converted in place. The migration
+recreates the project with the exact `followthebitcoin` name after GitHub
+authorization; replacing it causes a short outage. Preserve the checked release
+and settings before replacement, and finish or cancel any old Actions publishing
+run. Remove the legacy Actions deployment job only once the native deployment
+has been verified. After migration, delete obsolete GitHub
+`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets and revoke the old API
+token. The native GitHub application connection stays in use.
 
-Sources: [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/),
-[Wrangler CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/),
-[response headers](https://developers.cloudflare.com/pages/configuration/headers/),
-[free-tier limits](https://developers.cloudflare.com/pages/platform/limits/),
+## Verification and recovery
+
+The public directory is **only** `dist/client/`. Never upload the source archive,
+`.git`, `.env`, `node_modules`, `dist/server/`, source maps, onion keys or aggregate
+data. The audit checks private artifacts, same-origin assets, exact HTML/CSP hash
+agreement and Cloudflare's 2,000-character header-line limit. Rebuild instead of
+copying CSP hashes from an older release.
+
+For each native deployment:
+
+1. Confirm Pages reports success for the intended `main` commit and that HTTPS
+   serves `https://followthebitcoin.pages.dev/` successfully.
+2. Inspect `Content-Security-Policy`, `Referrer-Policy: no-referrer`,
+   `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY`. The script hashes
+   must match that deployment's HTML.
+3. Check both quests, wrong answers, evidence/role transitions, resume/reset,
+   distinct badge downloads and copied quest links. Check a narrow viewport,
+   keyboard navigation and the JavaScript-disabled reading edition.
+4. Inspect requests and console errors. Gameplay needs only this site's origin;
+   no analytics beacon, cookie, wallet connection or progress storage is added.
+5. Record the live source revision. Test Tor Browser separately before making
+   claims about its accessibility on this hosting account.
+
+Retry a failed native build from its **Pages deployment** screen after resolving
+the cause, or push a reviewed fix to `main`. Rerunning GitHub Actions alone does
+not request a Cloudflare deployment. A failed update normally leaves the previous
+successful Pages release available. Use Pages rollback for a bad published
+release, then fix the source through the usual review process.
+
+For exceptional manual recovery, a separately authenticated maintainer can
+deploy a reviewed, built and audited export to an existing Git-integrated project:
+
+```sh
+npx --no-install wrangler pages deploy dist/client --project-name followthebitcoin --branch main
+```
+
+Use a clean checkout and separate operator authentication (Wrangler login or an
+appropriately scoped temporary Pages token), outside the GitHub workflow. There
+is no active GitHub Cloudflare deployment token. Pass the directory directly:
+Pages rejects a custom `--config` path. A stale ignored `.wrangler/deploy/` redirect
+from earlier local development can affect config discovery, so inspect local
+state before manual upload. Coordinate recovery with automatic deployments to
+avoid publishing conflicting revisions. Git-integrated projects do not support
+the dashboard drag-and-drop upload flow.
+
+[Direct Upload and existing Git projects](https://developers.cloudflare.com/pages/get-started/direct-upload/),
+[Pages rollbacks](https://developers.cloudflare.com/pages/configuration/rollbacks/).
+
+## Privacy and hosting
+
+Keep Web Analytics, Zaraz, Rocket Loader and other script injection disabled.
+The same-origin CSP intentionally excludes external beacons. Cloudflare can
+process hosting connection metadata independently; this release has no project
+visitor analytics or active daily counter. No `.onion` service is claimed.
+
+The configuration requires no paid option. Provider quotas and terms still
+apply; check current limits before enabling Functions or changing architecture.
+[Free-tier limits](https://developers.cloudflare.com/pages/platform/limits/),
 [static asset pricing](https://developers.cloudflare.com/pages/functions/pricing/).
-
-## Release and verification
-
-Before publishing a source revision, run `npm ci`, `npm run lint`,
-`npx tsc --noEmit`, `npm test`, `npm run build`, and `npm run check:release`.
-The GitHub workflow repeats these checks. Configure protected `main`, one approval,
-required CI and resolved conversations. Only the reviewed production revision
-may deploy after its checks pass. Never pass secrets to untrusted pull-request
-builds; only the trusted-main deployment step receives Cloudflare credentials.
-
-The public root must contain only `dist/client/`. Never upload `.git`, source
-maps, `.env`, `node_modules`, `dist/server/`, onion keys or aggregate data. The
-export audit checks same-origin executable/style/image assets, CSP hash matches,
-forbidden artifacts and Cloudflare's 2,000-character header-line limit. The CSP
-permits only the exact generated inline bootstrap scripts, not arbitrary inline
-script or eval. Rebuild instead of manually copying hashes between releases.
-
-After Cloudflare reports a successful deployment:
-
-1. Verify HTTPS responds successfully at the exact production address. Confirm
-   `Content-Security-Policy`, `Referrer-Policy: no-referrer`,
-   `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` in the response.
-2. Play the full quest using visible answer buttons and every role switch. Check
-   wrong answers, completion, reset, badge download and direct hash navigation.
-3. Inspect requests and console errors. Gameplay must use only the site's origin,
-   with no analytics beacon, wallet connection, cookie or progress storage.
-4. Check a narrow mobile viewport, keyboard focus, disabled JavaScript reading
-   mode and optional outbound source/community links. Test Tor Browser separately
-   before making claims about Tor accessibility on the hosting account.
-5. Record the production revision and deployment outcome. For a bad release, use
-   Pages' rollback and fix the source through the normal review process.
 
 ## Community and source settings
 
 `lib/site-config.ts` holds public destinations only. The current community uses
-GitHub Discussions in the source repository. Enable it in repository settings,
-moderate public posts and provide a welcome/rules topic. Posting needs a GitHub
-account; reading or playing the game does not. Never embed the discussion UI or
-load GitHub on the player's behalf. Enable private vulnerability reporting for
-sensitive reports rather than directing users to public discussions.
+GitHub Discussions in the source repository. Posting requires a GitHub account;
+reading or playing does not. Keep public posts moderated and private vulnerability
+reporting enabled. Do not embed GitHub or load it on the player's behalf.
 
-An alternative SimpleX group can be added later if a moderator supplies and
-verifies its invitation. Update the configuration and privacy copy together;
-do not invent a group or promise messages disappear from members' devices.
+A SimpleX group can be added later if a moderator supplies and verifies its
+invitation. Update configuration and privacy copy together; do not promise
+messages disappear from other members' devices.
 
 ## Optional later self-hosting and Tor
 
-Tor Browser can visit an HTTPS site. A real v3 onion address requires a running
-Tor service; Cloudflare Pages alone does not provide it. The export supports a
-separate low-cost Linux host later, using the existing Node server and examples
-in `deploy/` for Caddy, systemd and Tor. The self-hosted Node server has no npm
-runtime dependencies. It binds to loopback by default.
+Tor Browser can visit HTTPS. A v3 onion address requires a running Tor service;
+Cloudflare Pages alone does not provide it. A separate Linux host can serve the
+same export using the zero-dependency Node server and examples in `deploy/` for
+Caddy, systemd and Tor. The server binds to loopback by default.
 
-Install supported Node, Caddy and Tor from official packages. Copy only public
-assets and the server files, validate Caddy and Tor configuration, serve the same
-release over HTTPS and onion, and verify the actual generated v3 hostname in Tor
-Browser. Set `onionUrl` and `ONION_URL` only to that verified address. Tor private
-keys stay outside the public root. Do not redirect onion play back to clearnet.
-Keep these services patched and disable request-level access/error logging in
-the reverse proxy. [Tor setup](https://community.torproject.org/onion-services/setup/).
+Install supported services from official sources, validate configuration and
+verify the actual generated v3 hostname in Tor Browser. Set `onionUrl` and
+`ONION_URL` only to that verified address. Keep private onion keys outside the
+public root, avoid clearnet redirects during onion play, patch services and
+disable request-level reverse-proxy logging.
+[Tor setup](https://community.torproject.org/onion-services/setup/).
 
 The optional Node counter is enabled only by setting `COUNT_FILE` to a private
-path outside the public export. It stores only daily totals for 30 UTC days,
-respects DNT/GPC and counts reloads/bots too. It is not a unique-human metric and
-has no public endpoint. Omit `COUNT_FILE` to disable it. This feature is not part
-of the free Pages deployment.
+path outside the export. It stores daily totals for 30 UTC days, respects DNT/GPC
+and includes reloads/bots. It is not a unique-human metric and has no public
+endpoint. Omit `COUNT_FILE` to disable it. This feature does not run on Pages.

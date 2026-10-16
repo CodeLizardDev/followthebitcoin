@@ -13,8 +13,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    outputs:
-      artifact-id: ${{ steps.release.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -30,7 +28,6 @@ jobs:
       - run: npm run build
       - run: npm run check:release
       - name: Retain the exact checked static export
-        id: release
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pages-${{ github.sha }}-${{ github.run_attempt }}
@@ -38,52 +35,3 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           include-hidden-files: false
-  deploy:
-    name: Deploy production
-    needs: check
-    if: >-
-      needs.check.result == 'success' &&
-      github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment:
-      name: production
-      url: https://followthebitcoin.pages.dev/
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '24'
-          cache: npm
-      - name: Install the lockfile-pinned uploader without lifecycle scripts or deployment secrets
-        run: npm ci --ignore-scripts
-      - name: Download only this run's checked artifact
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          artifact-ids: ${{ needs.check.outputs.artifact-id }}
-          path: dist/client/
-          merge-multiple: true
-          digest-mismatch: error
-      - name: Revalidate downloaded assets and exact HTML/CSP hash agreement
-        run: npm run check:release
-      - name: Publish only if this revision is still main
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WRANGLER_SEND_METRICS: 'false'
-        run: |
-          set -euo pipefail
-          current_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
-          if [[ "$current_sha" != "$GITHUB_SHA" ]]; then
-            echo '::notice::Skipping deployment because a newer main revision exists.'
-            exit 0
-          fi
-          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
-            echo '::error::Production Cloudflare deployment secrets are not configured.'
-            exit 1
-          fi
-          npx --no-install wrangler pages deploy dist/client --project-name followthebitcoin --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=false
