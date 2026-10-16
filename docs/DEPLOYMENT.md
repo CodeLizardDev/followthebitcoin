@@ -22,14 +22,57 @@ unchecked raw framework build. The optional CLI configuration is
 `npx wrangler pages deploy --config deploy/wrangler-pages.jsonc` after separate
 operator authentication. The configuration contains no credentials.
 
-The public GitHub repository holds the source and CI review checks. A Git push
-does **not** update this Direct Upload project automatically. For each update,
-upload a newly checked export and record its source revision. Cloudflare does
-not allow converting an existing Direct Upload project to Git integration;
-automated deployments can be added later through Wrangler CI with a narrowly
-scoped deployment credential. No such credential or workflow is installed by
-this release. Creating a different Git-integrated project is another later
-option, but its address/name availability must be handled deliberately.
+The initial dashboard upload remains a valid manual recovery path. Subsequent
+updates use the GitHub Actions workflow below. A Direct Upload project cannot be
+converted to Cloudflare Git integration; Wrangler-based CI deploys to the same
+existing project without installing another GitHub application or changing the
+public address.
+
+## Automatic production updates
+
+The `Review checks` workflow preserves the required `check` job. Pull requests
+lint, type-check, test, build and audit the static release without Cloudflare
+credentials. That job uploads only the checked `dist/client/` folder as an
+immutable artifact, with an attempt-specific name and seven-day retention.
+
+A separate `Deploy production` job runs only after a successful check on a push
+to `main`, or a manual `workflow_dispatch` targeting `main`. It uses the GitHub
+`production` environment, downloads that exact artifact by ID, rejects a digest
+mismatch, and reruns the release audit including the precise `index.html` /
+`_headers` script-hash agreement. It does not rebuild. Dependencies are installed
+from the lockfile with lifecycle scripts disabled before Cloudflare secrets are
+placed in any process environment. Deployment invokes the lockfile-pinned
+Wrangler with explicit project `followthebitcoin`, branch `main` and source SHA.
+
+Workflow concurrency cancels older runs for the same ref. Immediately before
+uploading, the deployment compares its source SHA to the current GitHub `main`
+tip and skips an outdated revision. This also protects a manually retried old
+run. Keep protected-branch review and the required `check` status enabled; only
+trusted reviewed source belongs on `main`.
+
+An account administrator must configure:
+
+1. A Cloudflare API token with **Account → Cloudflare Pages → Edit**, scoped to
+   the single account containing this project. No zone, DNS, billing or global
+   API-key permission is needed. This permission covers Pages projects in that
+   account, so protect and rotate the token as a deployment credential.
+2. GitHub Actions secrets named **`CLOUDFLARE_API_TOKEN`** and
+   **`CLOUDFLARE_ACCOUNT_ID`**, preferably in the **`production`** environment.
+   Store only secret values through GitHub's secret UI/API; never commit them,
+   put them in workflow arguments or paste them into logs.
+3. A `production` environment restricted to the `main` branch. No reviewer gate
+   is needed for the requested automatic updates; branch protection and CI remain
+   the source-review gate. Pull-request and non-main jobs must not access it.
+
+To retry, open Actions → Review checks → Run workflow and select **main**. This
+checks and builds the current main revision before deployment. Rerunning a
+failed deployment job can reuse its checked artifact while it is retained, but
+still passes the current-tip guard. After seven days, run the workflow again to
+create a fresh checked artifact. Missing/expired credentials or provider errors
+fail the deployment job; the previous successful site stays available. Inspect
+the job and Cloudflare deployment status rather than treating a green check job
+alone as publication success. Dashboard upload or Pages rollback remains an
+operator recovery option.
 
 Leave Cloudflare Web Analytics, Zaraz, Rocket Loader and other HTML/script
 injection disabled. The release's same-origin CSP intentionally excludes
@@ -53,9 +96,9 @@ Sources: [Direct Upload](https://developers.cloudflare.com/pages/get-started/dir
 Before publishing a source revision, run `npm ci`, `npm run lint`,
 `npx tsc --noEmit`, `npm test`, `npm run build`, and `npm run check:release`.
 The GitHub workflow repeats these checks. Configure protected `main`, one approval,
-required CI and resolved conversations. Upload only the reviewed production
-revision after its checks pass. Do not pass secrets to untrusted pull-request
-builds. Review checks do not deploy or require a Cloudflare credential.
+required CI and resolved conversations. Only the reviewed production revision
+may deploy after its checks pass. Never pass secrets to untrusted pull-request
+builds; only the trusted-main deployment step receives Cloudflare credentials.
 
 The public root must contain only `dist/client/`. Never upload `.git`, source
 maps, `.env`, `node_modules`, `dist/server/`, onion keys or aggregate data. The
