@@ -1,4 +1,94 @@
 /* The quest edition extends the original dark forest and lime design. */
+.phase-trail {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0 0 20px;
+  margin: 0 0 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 14px;
+  color: #9baa92;
+  font-size: 12px;
+}
+.phase-trail li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.phase-trail li > span {
+  display: grid;
+  place-items: center;
+  border: 1px solid #485740;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+.phase-trail li[aria-current='step'] {
+  color: var(--primary);
+}
+.phase-trail li[aria-current='step'] > span {
+  background: var(--primary);
+  color: #111b16;
+  border-color: var(--primary);
+}
+.theory-recap {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid #405335;
+  border-radius: 9px;
+  background: #142019;
+}
+.theory-recap > span {
+  font-size: 11px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #aabd98;
+}
+.theory-recap p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 5px 0 10px;
+  color: #d0dcc7;
+}
+.theory-recap p:last-child {
+  margin-bottom: 0;
+}
+.map-jump {
+  display: none;
+}
+@media (max-width: 760px) {
+  .map-jump {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border: 1px solid #526747;
+    border-radius: 8px;
+    background: #22301e;
+    color: var(--primary);
+    font-size: 14px;
+    width: 100%;
+    cursor: pointer;
+  }
+  .scene-card > .map-jump {
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+  }
+  .phase-trail {
+    gap: 12px;
+    font-size: 11px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+  .scene-card:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
+}
 .action-message,
 .change-explanation {
   display: block;

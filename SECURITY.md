@@ -1,11 +1,10 @@
 # Security and privacy reports
 
 Never include keys, real wallet records, private messages or visitor IP addresses
-in public issues. A project-owned GitHub repository and reporting channel are not
-published yet. Do not report to an invented address.
+in public issues. Use [GitHub private vulnerability reporting](https://github.com/CodeLizardDev/followthebitcoin/security/advisories/new)
+for security issues. Private reporting is enabled for this repository.
 
-Before public launch, enable GitHub private vulnerability reporting and link the
-verified repository. Report security issues there; use ordinary issues for
+Use ordinary [issues](https://github.com/CodeLizardDev/followthebitcoin/issues) for
 non-sensitive reproducible bugs. No response-time SLA is promised for this small
 volunteer project. Support targets the most recent release.
 
@@ -13,7 +12,9 @@ volunteer project. Support targets the most recent release.
 
 Only `dist/client/` is public. Do not serve the repository, `dist/server/`, source
 maps, `.env`, aggregate files, Git history or onion keys. The Node static server
-sets a restrictive CSP and does not expose a metrics API. Deploy one server
+sets a restrictive CSP and does not expose a metrics API. Cloudflare Pages uses
+the same policy in the generated `_headers` file; it runs no Node server or
+project-owned visitor counter. For optional self-hosting, deploy one server
 process per aggregate file; atomic replacement is not a multi-process lock.
 
 The game uses no server-side React in production. Dependency findings still

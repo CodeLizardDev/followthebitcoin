@@ -1,0 +1,30 @@
+/* Each diagram has one accessible, visible layout at the current viewport. */
+.transaction-map.transaction-map--mobile {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .transaction-map.transaction-map--desktop {
+    display: none;
+  }
+
+  .transaction-map.transaction-map--mobile {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+
+  .map-area:has(.transaction-map--mobile) {
+    overflow-x: hidden;
+  }
+
+  .map-area:has(.transaction-map--mobile)::after {
+    display: none;
+    content: none;
+  }
+
+  .quest-cover-map .transaction-map.transaction-map--mobile {
+    max-height: none;
+  }
+}

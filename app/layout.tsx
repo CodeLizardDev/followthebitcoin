@@ -2,13 +2,36 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './quest.css';
 import { scenarios } from '@/lib/scenarios';
+import { siteConfig } from '@/lib/site-config';
+
+const description =
+  'Solve three payment mysteries, switch sides and learn to share less. A free, open-source Bitcoin privacy quest for beginners.';
 
 export const metadata: Metadata = {
   title: 'Follow the Bitcoin — First Clue',
-  description:
-    'Solve three payment mysteries, switch sides and learn to share less. A free, open-source Bitcoin privacy quest for beginners.',
+  description,
+  metadataBase: siteConfig.publicOrigin
+    ? new URL(siteConfig.publicOrigin)
+    : undefined,
+  alternates: siteConfig.publicOrigin ? { canonical: '/' } : undefined,
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    siteName: siteConfig.name,
+    title: 'Follow the Bitcoin — First Clue',
+    description,
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Follow the Bitcoin — First Clue',
+    description,
+  },
   referrer: 'no-referrer',
-  robots: { index: false, follow: false },
+  robots: {
+    index: Boolean(siteConfig.publicOrigin),
+    follow: Boolean(siteConfig.publicOrigin),
+  },
 };
 
 export default function RootLayout({
@@ -54,10 +77,26 @@ export default function RootLayout({
               </section>
             ))}
             <p>
-              No account, answers or wallet data are collected. This server may
-              count this page load in a daily total. Reloads and bots count too.
-              Community and source links will be included here when they are
-              published.
+              No account, answers or wallet data are collected. This static
+              edition has no visitor analytics. Cloudflare serves the files and
+              can process connection metadata. Optional community conversations
+              use GitHub; posting there requires a GitHub account. There is no
+              onion address yet.
+            </p>
+            <p>
+              {siteConfig.repositoryUrl && (
+                <a href={siteConfig.repositoryUrl} rel="noreferrer noopener">
+                  Read the open-source code on GitHub
+                </a>
+              )}
+              {siteConfig.communityUrl && (
+                <>
+                  {' · '}
+                  <a href={siteConfig.communityUrl} rel="noreferrer noopener">
+                    Visit the optional community
+                  </a>
+                </>
+              )}
             </p>
           </div>
         </noscript>

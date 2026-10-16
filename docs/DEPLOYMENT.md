@@ -1,93 +1,115 @@
-# Low-cost HTTPS + onion deployment
+# Free Cloudflare Pages deployment
 
-This checkout is local only. No domain, VPS, onion service, chat group or public
-GitHub repository has been created. Do not advertise placeholder destinations.
+The production configuration targets `https://followthebitcoin.pages.dev/`, with
+source at `https://github.com/CodeLizardDev/followthebitcoin`. The project does not
+need a purchased domain. This is a static release: no Pages Functions, database,
+paid Worker or Node server is deployed.
 
-## Chosen architecture
+## Initial deployment: Direct Upload
 
-Build once, serve static files. A single small Linux VPS runs the zero-dependency
-Node static server, Caddy for automatic HTTPS, and Tor for a v3 onion service.
-One copy of the files and one daily aggregate counter serve both entrypoints.
-There is no database, paid analytics subscription or always-running React server.
+Build the reviewed source locally with Node 24. Create or select **Workers &
+Pages → Create application → Pages → Direct Upload / Upload assets**. Use project
+name `followthebitcoin` and upload the **contents** of `dist/client/`, either as
+a folder or a ZIP whose root contains `index.html`, `_headers` and the assets.
+Do not upload the source archive or wrap the export inside an extra directory.
+There are no framework build settings, Functions bindings or runtime secrets for
+this dashboard upload.
 
-Free static hosting is also possible: upload only `dist/client/`. In that mode,
-the supplied daily counter and onion service need separate infrastructure; the
-host may keep request metadata. Reusing an existing Linux server is the cheapest
-way to get all three capabilities with the documented data handling.
+`npm run build` includes the postbuild step that removes known build metadata,
+generates CSP response headers and audits the public output. Do not publish an
+unchecked raw framework build. The optional CLI configuration is
+`deploy/wrangler-pages.jsonc`; use it explicitly with
+`npx wrangler pages deploy --config deploy/wrangler-pages.jsonc` after separate
+operator authentication. The configuration contains no credentials.
 
-As checked on 2026-09-09, the selected domain was offered by Porkbun at $7.98 for
-the first year and $11.84 renewal, with possible tax at checkout. One reference
-VPS price is Hetzner CX23 in Germany/Finland at €5.49/month excluding IPv4 and VAT.
-Allow roughly €6–8/month plus domain fees depending on tax and networking; this
-is an estimate, not a purchased plan or a permanent quote.
+The public GitHub repository holds the source and CI review checks. A Git push
+does **not** update this Direct Upload project automatically. For each update,
+upload a newly checked export and record its source revision. Cloudflare does
+not allow converting an existing Direct Upload project to Git integration;
+automated deployments can be added later through Wrangler CI with a narrowly
+scoped deployment credential. No such credential or workflow is installed by
+this release. Creating a different Git-integrated project is another later
+option, but its address/name availability must be handled deliberately.
 
-Sources: [Porkbun .org](https://porkbun.com/tld/org),
-[Hetzner current price adjustment](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/),
-[Tor onion setup](https://community.torproject.org/onion-services/setup/),
-[Caddy logging](https://caddyserver.com/docs/caddyfile/directives/log).
+Leave Cloudflare Web Analytics, Zaraz, Rocket Loader and other HTML/script
+injection disabled. The release's same-origin CSP intentionally excludes
+analytics beacons. Hosting request metadata remains under Cloudflare's policies.
+The project's own daily counter does not run on Pages. No public `.onion` service
+is claimed by this deployment.
 
-## Release settings
+Cloudflare Pages' free tier currently allows static asset requests without
+request charges and has quotas including monthly builds and file limits. This
+project requires no paid option. Check the provider's current plan before
+changing the architecture or enabling Functions.
 
-Set reviewed public destinations in `lib/site-config.ts`: `publicOrigin`,
-`repositoryUrl`, `communityUrl`, `communityProvider`, and `onionUrl`. Keep unknown
-values null. The selected HTTPS domain is `https://followthebitcoin.org`, but do
-not set it as live until registered and served. `publicOrigin` controls the badge
-and share link. It must not force onion visitors back to clearnet during play.
-Change `robots` in `app/layout.tsx` to allow indexing only for the public release.
-The release checker deliberately blocks unresolved public destinations.
+Sources: [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/),
+[Wrangler CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/),
+[response headers](https://developers.cloudflare.com/pages/configuration/headers/),
+[free-tier limits](https://developers.cloudflare.com/pages/platform/limits/),
+[static asset pricing](https://developers.cloudflare.com/pages/functions/pricing/).
 
-## Operator setup (review before running on your server)
+## Release and verification
 
-1. Provision a small, supported Linux host. Install supported Node 24 LTS, Caddy
-   and Tor from their official package sources. Limit incoming ports to SSH,
-   80 and 443; the application must bind to loopback, not a public interface.
-2. Build and validate the reviewed source revision with `npm ci`, `npm run lint`,
-   `npx tsc --noEmit`, `npm test`, `npm run build`, and `npm run check:release`.
-3. Copy **only** `dist/client/`, `server/`, `LICENSE` and the reviewed deployment
-   configuration to `/opt/follow-the-bitcoin`. Keep the directory readable but
-   not writable by the dynamic service user. Do not copy `.git`, source maps,
-   dev servers, `node_modules`, secrets or `dist/server` into the public root.
-4. Install `deploy/follow-the-bitcoin.service` under `/etc/systemd/system/`.
-   Run `systemctl daemon-reload` and `systemctl enable --now follow-the-bitcoin`.
-   `curl -I http://127.0.0.1:4317/` must return 200 with privacy headers.
-5. Register the domain, set DNS to the host and use `deploy/Caddyfile`. Validate
-   with `caddy validate --config /etc/caddy/Caddyfile` before reload. Verify HTTPS
-   and inspect both normal and error logs to confirm requests are not recorded.
-6. Add the Tor configuration fragment to your existing torrc. Run
-   `tor --verify-config`, then restart Tor using your distribution's service.
-   Read `/var/lib/tor/follow-the-bitcoin/hostname` for the actual v3 address.
-7. Test that address in Tor Browser. Add the verified URL to `onionUrl` and set
-   `ONION_URL=http://THE_VERIFIED_56_CHARACTER_ADDRESS.onion/` in the operator-only
-   `/etc/follow-the-bitcoin.env`. Rebuild the public files, restart the site, and
-   check that the HTTPS response advertises the correct `Onion-Location` header.
-   Do not enable non-anonymous or single-hop onion mode.
-8. Test the whole quest, badge download, and no-JavaScript edition over HTTPS and
-   Tor. Check that third-party requests occur only after deliberately leaving.
-   Load once with DNT/GPC and once without; inspect the aggregate file. Confirm
-   `/stats`, `/metrics`, `/.env` and filesystem traversal attempts cannot expose
-   private data. The JSON is read over SSH, never via a public endpoint.
+Before publishing a source revision, run `npm ci`, `npm run lint`,
+`npx tsc --noEmit`, `npm test`, `npm run build`, and `npm run check:release`.
+The GitHub workflow repeats these checks. Configure protected `main`, one approval,
+required CI and resolved conversations. Upload only the reviewed production
+revision after its checks pass. Do not pass secrets to untrusted pull-request
+builds. Review checks do not deploy or require a Cloudflare credential.
 
-State is tiny: only the 30-day count file and Tor's private service keys need
-operator backups. Store the keys securely outside the website; losing them
-changes the onion address. Do not back up access logs or introduce request-level
-analytics. Caddy certificates need renewal, and the OS/services need updates.
+The public root must contain only `dist/client/`. Never upload `.git`, source
+maps, `.env`, `node_modules`, `dist/server/`, onion keys or aggregate data. The
+export audit checks same-origin executable/style/image assets, CSP hash matches,
+forbidden artifacts and Cloudflare's 2,000-character header-line limit. The CSP
+permits only the exact generated inline bootstrap scripts, not arbitrary inline
+script or eval. Rebuild instead of manually copying hashes between releases.
 
-## GitHub and community activation
+After Cloudflare reports a successful deployment:
 
-Create a separate project-owned public GitHub repository; do not accidentally
-publish through a personal account if separation is intended. Review all commit
-author metadata, remote URLs and included files before pushing. Enable protected
-branches, CI and private vulnerability reporting as described in CONTRIBUTING.
-The CI workflow runs checks and produces an artifact; it does not deploy on push.
+1. Verify HTTPS responds successfully at the exact production address. Confirm
+   `Content-Security-Policy`, `Referrer-Policy: no-referrer`,
+   `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` in the response.
+2. Play the full quest using visible answer buttons and every role switch. Check
+   wrong answers, completion, reset, badge download and direct hash navigation.
+3. Inspect requests and console errors. Gameplay must use only the site's origin,
+   with no analytics beacon, wallet connection, cookie or progress storage.
+4. Check a narrow mobile viewport, keyboard focus, disabled JavaScript reading
+   mode and optional outbound source/community links. Test Tor Browser separately
+   before making claims about Tor accessibility on the hosting account.
+5. Record the production revision and deployment outcome. For a bad release, use
+   Pages' rollback and fix the source through the normal review process.
 
-Recommended chat is a moderator-owned SimpleX group. The moderator creates and
-retains the group/profile in their own app, enables an invitation, checks it from
-a separate test profile, and supplies the public invitation URL. Put that exact
-link in `communityUrl`. Do not create an agent-owned group or invent a link.
-SimpleX does not require a phone/email account; it does require a compatible app.
-An open invitation needs moderation, and group members can retain messages.
-[SimpleX quick start](https://simplex.chat/docs/guide/readme.html).
+## Community and source settings
 
-If Matrix or GitHub Discussions is chosen instead, update both the configuration
-and community privacy copy to reflect account, provider and retention behaviour.
-Publishing the site is independent of joining its community.
+`lib/site-config.ts` holds public destinations only. The current community uses
+GitHub Discussions in the source repository. Enable it in repository settings,
+moderate public posts and provide a welcome/rules topic. Posting needs a GitHub
+account; reading or playing the game does not. Never embed the discussion UI or
+load GitHub on the player's behalf. Enable private vulnerability reporting for
+sensitive reports rather than directing users to public discussions.
+
+An alternative SimpleX group can be added later if a moderator supplies and
+verifies its invitation. Update the configuration and privacy copy together;
+do not invent a group or promise messages disappear from members' devices.
+
+## Optional later self-hosting and Tor
+
+Tor Browser can visit an HTTPS site. A real v3 onion address requires a running
+Tor service; Cloudflare Pages alone does not provide it. The export supports a
+separate low-cost Linux host later, using the existing Node server and examples
+in `deploy/` for Caddy, systemd and Tor. The self-hosted Node server has no npm
+runtime dependencies. It binds to loopback by default.
+
+Install supported Node, Caddy and Tor from official packages. Copy only public
+assets and the server files, validate Caddy and Tor configuration, serve the same
+release over HTTPS and onion, and verify the actual generated v3 hostname in Tor
+Browser. Set `onionUrl` and `ONION_URL` only to that verified address. Tor private
+keys stay outside the public root. Do not redirect onion play back to clearnet.
+Keep these services patched and disable request-level access/error logging in
+the reverse proxy. [Tor setup](https://community.torproject.org/onion-services/setup/).
+
+The optional Node counter is enabled only by setting `COUNT_FILE` to a private
+path outside the public export. It stores only daily totals for 30 UTC days,
+respects DNT/GPC and counts reloads/bots too. It is not a unique-human metric and
+has no public endpoint. Omit `COUNT_FILE` to disable it. This feature is not part
+of the free Pages deployment.

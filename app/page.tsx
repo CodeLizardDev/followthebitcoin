@@ -54,17 +54,17 @@ const glossary = [
     'A destination you share to receive bitcoin. One wallet can create many addresses.',
   ],
   [
-    'Coin',
-    'An amount received earlier that your wallet can spend. A payment can use one or several coins.',
+    'Coin & change',
+    'A coin is an amount received earlier that a wallet can spend. A payment can use one or several coins. Any amount left over returns to the payer as change; a small part pays the network fee.',
   ],
   [
     'CoinJoin',
-    'A transaction made together by several people. In this example, equal outputs allow several possible ownership matches.',
+    'A transaction made together by several people. Inputs are the coins going in; outputs are the new coins coming out. Here, equal outputs allow several possible ownership matches.',
   ],
 ];
 const roleStories = [
   'You are Client B. A designer gives you an address for your payment. You look at the public payment map. What else can you learn?',
-  'You work at an exchange. You know who withdrew the 0.06 BTC coin. Later, you see it spent together with a second coin.',
+  'You work at a bitcoin exchange, where people buy and sell bitcoin. You know who withdrew 0.06 BTC. Later, you see it spent together with a second coin.',
   'You are a merchant. You know one earlier input belongs to a particular person, but you do not know who is paying you now. Can the payment map reveal the match?',
 ];
 const protectStories = [
@@ -98,6 +98,7 @@ export default function Home() {
   const [game, dispatch] = useReducer(gameReducer, initialGame);
   const heading = useRef<HTMLHeadingElement>(null);
   const feedback = useRef<HTMLDivElement>(null);
+  const paymentMap = useRef<HTMLElement>(null);
   const s = scenarios[game.index];
   const revealed = game.phase !== 'investigate';
   const changed = game.comparison === 'alternative';
@@ -371,7 +372,12 @@ export default function Home() {
             ))}
           </ol>
           <div className="game-grid">
-            <section className="scene-card" aria-label="Payment map">
+            <section
+              className="scene-card"
+              aria-label="Payment map"
+              ref={paymentMap}
+              tabIndex={-1}
+            >
               <div className="scene-toolbar">
                 <span className="mono-label">THE PAYMENT MAP</span>
                 <span className="fiction-label">FICTIONAL DATA</span>
@@ -400,8 +406,32 @@ export default function Home() {
                 <summary>New word: {glossary[game.index][0]}</summary>
                 <p>{glossary[game.index][1]}</p>
               </details>
+              {game.phase === 'protect' && (
+                <button
+                  type="button"
+                  className="map-jump"
+                  onClick={() => feedback.current?.focus()}
+                >
+                  Back to your choices <ArrowRight size={16} />
+                </button>
+              )}
             </section>
             <section className="question-card" aria-labelledby="question-title">
+              <ol className="phase-trail" aria-label="Steps in this clue">
+                {['Investigate', 'Reveal', 'Try a change'].map((label, i) => (
+                  <li
+                    key={label}
+                    aria-current={
+                      ['investigate', 'reveal', 'protect'][i] === game.phase
+                        ? 'step'
+                        : undefined
+                    }
+                  >
+                    <span>{i + 1}</span>
+                    {label}
+                  </li>
+                ))}
+              </ol>
               <div className="observer">
                 <span className="observer-icon">
                   {game.phase === 'protect' ? (
@@ -481,6 +511,27 @@ export default function Home() {
                     </strong>
                   </div>
                   <p className="explanation">{s.explanation}</p>
+                  <div className="theory-recap">
+                    <span>Your theory</span>
+                    <p>
+                      {
+                        s.answers.find(
+                          (answer) => answer.id === game.answers[game.index],
+                        )?.text
+                      }
+                    </p>
+                    {!gradeAnswer(game.index, game.answers[game.index]) && (
+                      <>
+                        <span>The supported conclusion</span>
+                        <p>
+                          {
+                            s.answers.find((answer) => answer.id === s.correct)
+                              ?.text
+                          }
+                        </p>
+                      </>
+                    )}
+                  </div>
                   <a
                     className="source-link"
                     href={s.source}
@@ -576,6 +627,15 @@ export default function Home() {
                         gives the observer a new clue about common ownership.
                       </TabsContent>
                     </Tabs>
+                  )}
+                  {game.explored && (
+                    <button
+                      type="button"
+                      className="map-jump"
+                      onClick={() => paymentMap.current?.focus()}
+                    >
+                      See what changed on the map <ArrowRight size={16} />
+                    </button>
                   )}
                   <Button
                     className="primary-action"
@@ -678,14 +738,16 @@ export default function Home() {
             </article>
             <article>
               <Eye size={26} />
-              <h2>A count, not a profile</h2>
+              <h2>No profile follows you</h2>
               <p>
-                The supplied self-hosted server can count successful page loads
-                per UTC day. It retains only a date and a total for 30 days. No
-                IP addresses, browser details, referrers or individual visit
-                records are saved. Reloads and bots can increase the count; it
-                is not a count of unique people.
+                This edition has no visitor analytics script or project-owned
+                visit database. The site is hosted by Cloudflare Pages, which
+                handles requests and may process connection information under
+                its own privacy policy. Playing does not send us your answers.
               </p>
+              <ExternalLink href="https://www.cloudflare.com/privacypolicy/">
+                Cloudflare privacy policy
+              </ExternalLink>
             </article>
             <article>
               <ShieldCheck size={26} />
@@ -749,9 +811,10 @@ export default function Home() {
                   Join on {siteConfig.communityProvider}
                 </ExternalLink>
                 <p className="fine-print">
-                  This opens an external community. This website does not
-                  receive or store its messages. Other members can keep or share
-                  what you post.
+                  This opens a public GitHub discussion. Reading is open;
+                  posting requires a GitHub account. Use a separate nickname if
+                  you prefer. Posts and your GitHub profile are visible to
+                  others. The game receives no chat history or account details.
                 </p>
               </>
             ) : (
@@ -766,14 +829,14 @@ export default function Home() {
             <details className="glossary">
               <summary>Why a separate community?</summary>
               <p>
-                The game does not need your chat identity or history. With
-                SimpleX, you can connect without providing a phone number or
-                email address. Members’ apps hold their conversations; relays
-                temporarily queue encrypted messages. An open invitation is
-                still a shared space, not a confidential conversation.
+                The game works without a community account. Discussions live
+                alongside the open-source project so you can ask questions,
+                propose cases and inspect the code in one place. GitHub applies
+                its own account and data policies. Treat every post as public;
+                keep wallet details and identifying information to yourself.
               </p>
-              <ExternalLink href="https://simplex.chat/">
-                Learn about SimpleX
+              <ExternalLink href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">
+                GitHub privacy policy
               </ExternalLink>
             </details>
           </section>
