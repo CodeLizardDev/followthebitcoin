@@ -50,12 +50,13 @@ optional self-hosted daily counter.
 
 ## Free Cloudflare Pages deployment
 
-The initial deployment uses **Pages Direct Upload**, project `followthebitcoin`.
-Build locally and upload the contents of `dist/client/`, including `_headers`, as
-a folder or ZIP. GitHub stores the public source and runs review checks; pushing
-code does not deploy it automatically. No custom domain, Functions, database,
-paid Worker or runtime secrets are required. Do not enable Web Analytics, Zaraz
-or third-party script injection for this release.
+The site uses **Pages Direct Upload**, project `followthebitcoin`. After the
+production deployment credentials are configured, GitHub Actions automatically
+publishes successful `main` pushes. Pull requests run checks without deployment
+secrets. The checked static export is built once, retained as an immutable
+artifact and deployed without rebuilding; a final check skips stale revisions.
+No custom domain, Functions, database or paid Worker is required. Do not enable
+Web Analytics, Zaraz or third-party script injection for this release.
 
 Each export regenerates `_headers` from the exact emitted inline-script bytes.
 The build rejects stale assets, private artifacts, third-party executable assets
@@ -83,8 +84,8 @@ Community and onion destinations are optional, and unset links must stay honest.
 
 Use focused pull requests, evidence, independent review, protected branches,
 pinned dependencies and reviewed releases. GitHub CI checks pull requests without
-deployment credentials. A maintainer uploads the checked static release to
-Cloudflare.
+deployment credentials. Protected `main` is the release gate; the separate
+`production` job receives the Cloudflare deployment secrets only for publishing.
 [Contributing](CONTRIBUTING.md), [security](SECURITY.md),
 [dependency review](docs/DEPENDENCIES.md), [third-party licenses](THIRD_PARTY.md).
 
