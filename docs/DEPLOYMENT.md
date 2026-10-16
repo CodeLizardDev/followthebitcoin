@@ -9,7 +9,8 @@ No purchased domain is needed.
 ## Native Git build settings
 
 Authorize the Cloudflare GitHub application for the selected repository only.
-Create/select **Workers & Pages → Pages → Connect to Git** with these settings:
+For the existing project, open **Settings → Build → Git repository → Connect**.
+In **Connect to a repository**, choose the repository and use these settings:
 
 | Setting | Value |
 | --- | --- |
@@ -75,12 +76,16 @@ it does not wait for or download the GitHub Actions artifact. Failed checks or
 builds prevent that Pages build from publishing. Always inspect the Pages
 deployment outcome and source SHA before declaring an update live.
 
-The former Direct Upload project cannot be converted in place. The migration
-recreates the project with the exact `followthebitcoin` name after GitHub
-authorization; replacing it causes a short outage. Preserve the checked release
-and settings before replacement, and finish or cancel any old Actions publishing
-run. Remove the legacy Actions deployment job only once the native deployment
-has been verified. After migration, delete obsolete GitHub
+For this existing project, use **Settings → Build → Git repository → Connect**.
+The official **Connect to a repository** dialog links the selected GitHub
+repository in place. Select `CodeLizardDev/followthebitcoin`, apply the native
+build settings above, and verify the resulting deployment on the existing
+`followthebitcoin.pages.dev` address. Keep the current project; deletion and
+recreation are unnecessary for this flow. Preserve the checked release and
+settings, finish or cancel old Actions publishing runs, and confirm the project
+identity, hostname and deployment history after connecting. Remove the legacy
+Actions deployment job only once the native deployment has been verified.
+After migration, delete obsolete GitHub
 `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets and revoke the old API
 token. The native GitHub application connection stays in use.
 
