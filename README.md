@@ -58,13 +58,20 @@ optional self-hosted daily counter.
 
 ## Free Cloudflare Pages deployment
 
-The site uses **Pages Direct Upload**, project `followthebitcoin`. After the
-production deployment credentials are configured, GitHub Actions automatically
-publishes successful `main` pushes. Pull requests run checks without deployment
-secrets. The checked static export is built once, retained as an immutable
-artifact and deployed without rebuilding; a final check skips stale revisions.
+The site uses **Cloudflare Pages' native GitHub integration**, project
+`followthebitcoin`, connected to `CodeLizardDev/followthebitcoin`. Cloudflare
+automatically checks, builds and publishes `main`; preview deployments are
+disabled. GitHub Actions separately validates pull requests and retains the
+checked static export for review. It has no publishing job or Cloudflare token.
 No custom domain, Functions, database or paid Worker is required. Do not enable
 Web Analytics, Zaraz or third-party script injection for this release.
+
+Native build settings: framework **None**, repository root, output `dist/client`,
+Node `24.15.0`, and `SKIP_DEPENDENCY_INSTALL=1`. The build command is:
+
+```sh
+npm ci --include=dev && npm run lint && npx --no-install tsc --noEmit && npm test && npm run build && npm run check:release
+```
 
 Each export regenerates `_headers` from the exact emitted inline-script bytes.
 The build rejects stale assets, private artifacts, third-party executable assets
@@ -85,15 +92,16 @@ npm run build
 npm run check:release
 ```
 
-Tests cover both quests' progression, badge eligibility, invalid actions, satoshi conservation,
-counter privacy/retention and Pages CSP/artifact safeguards. `--local` relaxes only
+Tests cover both quests' progression, badge eligibility, invalid actions, satoshi
+conservation, counter privacy/retention and Pages CSP/artifact safeguards. `--local` relaxes only
 the requirement for configured public URLs; it never weakens artifact checks.
 Community and onion destinations are optional, and unset links must stay honest.
 
 Use focused pull requests, evidence, independent review, protected branches,
 pinned dependencies and reviewed releases. GitHub CI checks pull requests without
-deployment credentials. Protected `main` is the release gate; the separate
-`production` job receives the Cloudflare deployment secrets only for publishing.
+deployment credentials. Protected `main` is the source-review gate. Cloudflare
+runs the full check/build/audit command before publishing its own static export;
+a green GitHub check alone does not confirm a successful Pages deployment.
 [Contributing](CONTRIBUTING.md), [security](SECURITY.md),
 [dependency review](docs/DEPENDENCIES.md), [third-party licenses](THIRD_PARTY.md).
 
