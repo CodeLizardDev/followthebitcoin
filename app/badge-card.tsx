@@ -1,20 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Award, Download, Share2, Copy, Check } from 'lucide-react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { Award, Search, Download, Share2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { badgeName, badgeFilename, createBadge } from '@/lib/badge';
+import { badgeMetadata, createBadge, type BadgeQuest } from '@/lib/badge';
 import { siteConfig } from '@/lib/site-config';
 
-export function BadgeCard() {
-  const [blob, setBlob] = useState<Blob | null>(null);
+export function BadgeCard({ quest = 'first-clue' }: { quest?: BadgeQuest }) {
+  // A new quest gets fresh image/message state immediately. The previous
+  // instance's cleanup also prevents its asynchronous canvas result being reused.
+  return <QuestBadgeCard key={quest} quest={quest} />;
+}
+
+function QuestBadgeCard({ quest }: { quest: BadgeQuest }) {
+  const badge = badgeMetadata[quest];
+  const isCase = quest === 'locked-fortune';
+  const [image, setImage] = useState<{ quest: BadgeQuest; blob: Blob } | null>(
+    null,
+  );
+  const blob = image?.quest === quest ? image.blob : null;
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let active = true;
-    createBadge(siteConfig.publicOrigin)
+    createBadge(siteConfig.publicOrigin, quest)
       .then((value) => {
-        if (active) setBlob(value);
+        if (active) setImage({ quest, blob: value });
       })
       .catch(() => {
         if (active)
@@ -25,20 +36,20 @@ export function BadgeCard() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [quest]);
   function download() {
     if (!blob) return;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = badgeFilename;
+    a.download = badge.filename;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     setMessage('Your badge is ready to save. Share it wherever you like.');
   }
   async function share() {
     if (!blob || busy) return;
-    const file = new File([blob], badgeFilename, { type: 'image/png' });
+    const file = new File([blob], badge.filename, { type: 'image/png' });
     if (!navigator.canShare?.({ files: [file] })) {
       download();
       setMessage(
@@ -50,10 +61,10 @@ export function BadgeCard() {
     try {
       await navigator.share({
         files: [file],
-        title: `${badgeName} — Follow the Bitcoin`,
-        text: 'I completed First Clue. What do your bitcoin payments reveal?',
+        title: `${badge.name} — Follow the Bitcoin`,
+        text: badge.shareText,
         ...(siteConfig.publicOrigin
-          ? { url: `${siteConfig.publicOrigin}/#quest/first-clue` }
+          ? { url: `${siteConfig.publicOrigin}${badge.route}` }
           : {}),
       });
       setMessage('The sharing menu has closed.');
@@ -69,7 +80,7 @@ export function BadgeCard() {
   }
   async function copyLink() {
     if (!siteConfig.publicOrigin) return;
-    const url = `${siteConfig.publicOrigin}/#quest/first-clue`;
+    const url = `${siteConfig.publicOrigin}${badge.route}`;
     try {
       await navigator.clipboard.writeText(url);
       setMessage('Quest link copied.');
@@ -78,13 +89,53 @@ export function BadgeCard() {
     }
   }
   return (
-    <section className="badge-section" aria-label="Your earned badge">
-      <div className="earned-badge">
-        <Award size={48} strokeWidth={1.3} />
-        <span className="eyebrow">QUEST 01 · BEGINNER</span>
-        <h2>{badgeName}</h2>
-        <p>Three clues. A different point of view.</p>
-        <span className="badge-issued">
+    <section
+      className="badge-section"
+      aria-label={`Your earned ${badge.name} badge`}
+      style={
+        isCase
+          ? ({
+              '--primary': badge.accent,
+              color: badge.foreground,
+            } as CSSProperties)
+          : undefined
+      }
+    >
+      <div
+        className="earned-badge"
+        style={
+          isCase
+            ? {
+                borderColor: badge.border,
+                background: 'linear-gradient(145deg, #20364b, #101b29)',
+              }
+            : undefined
+        }
+      >
+        {isCase ? (
+          <Search size={48} strokeWidth={1.3} />
+        ) : (
+          <Award size={48} strokeWidth={1.3} />
+        )}
+        <span
+          className="eyebrow"
+          style={isCase ? { color: badge.muted } : undefined}
+        >
+          QUEST {badge.number} · {badge.category}
+        </span>
+        <h2>{badge.name}</h2>
+        {isCase && <p style={{ color: badge.muted }}>{badge.questTitle}</p>}
+        <p style={isCase ? { color: badge.muted } : undefined}>
+          {badge.subtitle}
+        </p>
+        <span
+          className="badge-issued"
+          style={
+            isCase
+              ? { borderColor: badge.border, color: badge.muted }
+              : undefined
+          }
+        >
           <Check size={16} />
           Completed · Follow the Bitcoin
         </span>
@@ -92,8 +143,8 @@ export function BadgeCard() {
       <div className="badge-actions">
         <h2>A little proof of your curiosity.</h2>
         <p>
-          You earned this by exploring all three situations. Every guess was
-          part of the journey.
+          You earned this by completing {badge.questTitle}. Every guess was part
+          of the journey; answers never reduce your reward.
         </p>
         <div className="button-row">
           <Button disabled={!blob} onClick={download}>

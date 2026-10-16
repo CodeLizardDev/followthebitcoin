@@ -43,10 +43,10 @@ export function useGameTools(bridge: Bridge) {
       'restart_game',
     ];
     const descriptions = [
-      'Read the current fictional game situation, answer options, and progress. No wallet or network data is accessed.',
-      'Submit one answer to the current fictional question and reveal its explanation. Changes the visible game state.',
-      'Change the visible payment comparison after answering. Receiving/spending accept original or alternative; CoinJoin accepts direct, coinjoin, or relink.',
-      'After revealing an answer, switch to the player role. After trying a comparison, advance to the next clue or badge.',
+      'Read the active educational quest, answer options and progress. No wallet or network data is accessed.',
+      'Submit one answer to the active educational question and reveal its explanation. In The Locked Fortune, open the evidence first.',
+      'First Clue: change the payment comparison after switching roles (original/alternative, or direct/coinjoin/relink for CoinJoin). The Locked Fortune: use choice evidence to open the current evidence package.',
+      'First Clue: switch roles after answering or advance after comparing. The Locked Fortune: begin the case from its briefing or advance after answering.',
       'Clear the local game progress and return to the first question.',
     ];
     names.forEach((name, index) => {

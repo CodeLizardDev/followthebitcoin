@@ -32,10 +32,14 @@ import {
 } from './graphs';
 import { BadgeCard } from './badge-card';
 import { WebBonus } from './web-bonus';
+import { LockedFortune } from './locked-fortune';
+import { CaseTeaser } from './case-board';
+import { caseReducer, initialCase, caseStages } from '@/lib/locked-fortune';
 
 type View =
   | 'quests'
   | 'quest/first-clue'
+  | 'quest/locked-fortune'
   | 'privacy'
   | 'community'
   | 'source'
@@ -43,6 +47,7 @@ type View =
 const views: View[] = [
   'quests',
   'quest/first-clue',
+  'quest/locked-fortune',
   'privacy',
   'community',
   'source',
@@ -96,6 +101,7 @@ function ExternalLink({
 export default function Home() {
   const [view, setView] = useState<View>('quests');
   const [game, dispatch] = useReducer(gameReducer, initialGame);
+  const [caseGame, caseDispatch] = useReducer(caseReducer, initialCase);
   const heading = useRef<HTMLHeadingElement>(null);
   const feedback = useRef<HTMLDivElement>(null);
   const paymentMap = useRef<HTMLElement>(null);
@@ -141,24 +147,68 @@ export default function Home() {
     dispatch({ type: 'reset' });
     navigate('quest/first-clue');
   }
+  function startCase() {
+    caseDispatch({ type: 'reset' });
+    navigate('quest/locked-fortune');
+  }
+  function openFirstClue() {
+    if (game.phase !== 'complete' && game.answers.length > 0)
+      navigate('quest/first-clue');
+    else start();
+  }
+  function openCase() {
+    if (caseGame.phase !== 'briefing' && caseGame.phase !== 'complete')
+      navigate('quest/locked-fortune');
+    else startCase();
+  }
+  const activeCase = view === 'quest/locked-fortune';
+  const caseStage = caseStages[caseGame.index];
   useGameTools({
-    snapshot: {
-      screen: view,
-      quest: 'first-clue',
-      situation: s.id,
-      phase: game.phase,
-      question: s.question,
-      options: s.answers,
-      revealed,
-      explored: game.explored,
-      comparison: game.comparison,
-    },
+    snapshot: activeCase
+      ? {
+          screen: view,
+          quest: 'locked-fortune',
+          situation: caseStage.id,
+          phase: caseGame.phase,
+          question: caseStage.question,
+          options: caseStage.answers,
+          evidenceOpened: caseGame.opened,
+          revealed:
+            caseGame.phase === 'reveal' || caseGame.phase === 'complete',
+        }
+      : {
+          screen: view,
+          quest: 'first-clue',
+          situation: s.id,
+          phase: game.phase,
+          question: s.question,
+          options: s.answers,
+          revealed,
+          explored: game.explored,
+          comparison: game.comparison,
+        },
     answer(id) {
+      if (activeCase) {
+        if (caseGame.phase !== 'investigate' || !caseGame.opened)
+          throw new Error('Open the evidence package before answering');
+        caseDispatch({ type: 'answer', id });
+        return;
+      }
       if (view !== 'quest/first-clue' || game.phase !== 'investigate')
         throw new Error('No unanswered question is open');
       dispatch({ type: 'answer', id });
     },
     compare(choice) {
+      if (activeCase) {
+        if (
+          choice !== 'evidence' ||
+          caseGame.phase !== 'investigate' ||
+          caseGame.opened
+        )
+          throw new Error('Choose evidence to open an unopened case package');
+        caseDispatch({ type: 'open' });
+        return;
+      }
       if (view !== 'quest/first-clue' || game.phase !== 'protect')
         throw new Error('Switch roles before comparing');
       const action = { type: 'compare' as const, choice: choice as Comparison };
@@ -167,6 +217,15 @@ export default function Home() {
       dispatch(action);
     },
     next() {
+      if (activeCase) {
+        if (caseGame.phase === 'briefing') caseDispatch({ type: 'begin' });
+        else if (caseGame.phase === 'reveal') caseDispatch({ type: 'next' });
+        else
+          throw new Error(
+            'Open the evidence package and answer before continuing',
+          );
+        return;
+      }
       if (view !== 'quest/first-clue') throw new Error('Open the quest first');
       if (game.phase === 'reveal') dispatch({ type: 'switch-role' });
       else if (game.phase === 'protect' && game.explored)
@@ -174,7 +233,7 @@ export default function Home() {
       else
         throw new Error('Answer, switch roles and compare before continuing');
     },
-    reset: start,
+    reset: activeCase ? startCase : start,
   });
 
   return (
@@ -272,14 +331,7 @@ export default function Home() {
                   Earn your First Clue badge
                 </li>
               </ol>
-              <Button
-                className="primary-action"
-                onClick={
-                  game.phase !== 'complete' && game.answers.length > 0
-                    ? () => navigate('quest/first-clue')
-                    : start
-                }
-              >
+              <Button className="primary-action" onClick={openFirstClue}>
                 {game.phase !== 'complete' && game.answers.length > 0
                   ? 'Continue quest'
                   : 'Start the quest'}
@@ -305,6 +357,49 @@ export default function Home() {
               </div>
             </div>
           </section>
+          <section
+            className="quest-cover case-cover"
+            aria-labelledby="locked-fortune-title"
+          >
+            <div className="quest-cover-copy">
+              <div className="quest-meta">
+                <span>QUEST 02</span>
+                <span>REAL CASE</span>
+                <span>4–6 MIN</span>
+              </div>
+              <h2 id="locked-fortune-title">The Locked Fortune</h2>
+              <p>
+                Almost 120,000 bitcoin stolen. A trail without a name. Can you
+                connect the evidence in the Bitfinex investigation?
+              </p>
+              <ol className="quest-checklist">
+                <li>
+                  <Search size={18} />
+                  Open three evidence packages
+                </li>
+                <li>
+                  <Lightbulb size={18} />
+                  Separate a lead from a conclusion
+                </li>
+                <li>
+                  <Award size={18} />
+                  Earn your Evidence Detective badge
+                </li>
+              </ol>
+              <Button className="primary-action" onClick={openCase}>
+                {caseGame.phase !== 'briefing' && caseGame.phase !== 'complete'
+                  ? 'Continue investigation'
+                  : 'Explore the real case'}
+                <ArrowRight size={19} />
+              </Button>
+              <p className="start-note">
+                Beginner friendly. Play in any order. Based on primary sources.
+              </p>
+            </div>
+            <div className="quest-cover-map">
+              <CaseTeaser />
+            </div>
+          </section>
           <div className="hub-bottom">
             <p>
               <LockKeyhole size={17} />
@@ -322,11 +417,19 @@ export default function Home() {
           <section className="next-quests">
             <span className="eyebrow">MORE CASES, MORE PERSPECTIVES</span>
             <p>
-              Future quests will explore trickier clues and carefully sourced
-              real-world cases. Each will have its own badge.
+              Start with everyday payments or open a real investigation. Every
+              quest has its own badge. More cases will follow.
             </p>
           </section>
         </main>
+      )}
+
+      {view === 'quest/locked-fortune' && (
+        <LockedFortune
+          game={caseGame}
+          dispatch={caseDispatch}
+          onFirstClue={openFirstClue}
+        />
       )}
 
       {view === 'quest/first-clue' && game.phase !== 'complete' && (
@@ -693,6 +796,10 @@ export default function Home() {
             ))}
           </div>
           <div className="completion-links">
+            <Button onClick={openCase}>
+              <Search size={17} />
+              Open The Locked Fortune
+            </Button>
             <Button onClick={() => navigate('bonus')}>
               <Compass size={17} />
               Explore the web privacy bonus
@@ -723,7 +830,8 @@ export default function Home() {
               <h2>Nothing to sign up for</h2>
               <p>
                 No account, email address, wallet connection or real transaction
-                is needed. All payments in the first quest are fictional.
+                is needed. First Clue uses fictional payments. The Locked
+                Fortune uses illustrative evidence based on a documented case.
               </p>
             </article>
             <article>

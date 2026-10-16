@@ -1,0 +1,279 @@
+.case-quest {
+  --primary: #9bd8ff;
+}
+.case-quest .round-heading h1 span,
+.case-quest.summary-main h1 span {
+  color: #a9c9dd;
+}
+.case-briefing {
+  padding: 35px 0 50px;
+}
+.case-briefing-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 55px;
+  align-items: center;
+  margin: 34px 0;
+}
+.case-briefing h1 {
+  font-size: clamp(48px, 5.4vw, 74px);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin: 16px 0 22px;
+  font-weight: 500;
+}
+.case-briefing h1 span {
+  color: #9bd8ff;
+}
+.case-briefing section > p {
+  color: #bbcad3;
+  font-size: 16px;
+  line-height: 1.8;
+}
+.case-briefing section > .case-lead {
+  font-size: 22px;
+  line-height: 1.6;
+  color: #e4eff5;
+  margin-bottom: 16px;
+}
+.case-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  padding: 25px 0;
+  margin: 12px 0;
+}
+.case-facts div {
+  display: grid;
+  gap: 7px;
+}
+.case-facts strong {
+  font-weight: 500;
+  font-size: 25px;
+  color: #b4dfff;
+}
+.case-facts span {
+  font-size: 13px;
+  color: #adc0cc;
+}
+.case-quest .primary-action {
+  background: #9bd8ff !important;
+  color: #102332 !important;
+}
+.case-quest .primary-action:hover {
+  background: #b6e4ff !important;
+}
+.case-quest .primary-action {
+  white-space: normal;
+  height: auto;
+  min-height: 48px;
+}
+.case-briefing .primary-action {
+  min-width: 230px;
+  margin-top: 23px;
+  margin-bottom: 13px;
+}
+.case-reconstruction {
+  display: flex;
+  gap: 16px;
+  border: 1px solid #3b5261;
+  padding: 21px;
+  border-radius: 12px;
+  background: #15232b;
+  color: #b9cdd9;
+}
+.case-reconstruction svg,
+.case-personal-lesson > svg {
+  flex: none;
+  color: #9bd8ff;
+  margin-top: 3px;
+}
+.case-reconstruction p {
+  line-height: 1.7;
+  font-size: 14px;
+}
+.case-reconstruction strong {
+  color: #e4eff5;
+}
+.case-briefing > .source-link {
+  margin-top: 18px;
+}
+.case-question {
+  border-color: #3b5261;
+  background: #16232b;
+}
+.case-question .observer-icon {
+  color: #9bd8ff;
+  background: #223c4c;
+}
+.case-question .observer strong {
+  font-size: 15px;
+}
+.case-question .answer-option:hover {
+  border-color: #86bedf;
+  background: #203747;
+}
+.case-question .theory-recap {
+  border-color: #3b5261;
+  background: #142028;
+}
+.case-question .theory-recap > span {
+  color: #9dc9e6;
+}
+.case-question .theory-recap p {
+  color: #d2e1eb;
+}
+.case-pending {
+  line-height: 1.8;
+  color: #adc2cf;
+  padding: 20px 0;
+  font-size: 16px;
+}
+.case-source-note {
+  color: #b0c4d0;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 17px 0 5px;
+}
+.case-quest .source-link {
+  color: #9bd8ff;
+}
+.case-glossary {
+  padding: 18px;
+  border: 1px solid #3b5261;
+  border-radius: 10px;
+  margin: 15px 0;
+  background: #142028;
+}
+.case-glossary summary {
+  color: #c2dbe9;
+}
+.case-glossary p {
+  color: #bfd0dc;
+}
+.case-quest .step-number {
+  flex-shrink: 0;
+}
+.case-quest .map-jump {
+  color: #b5e2ff;
+  background: #203747;
+  border-color: #47687b;
+}
+.case-quest .earned-badge {
+  border-color: #6093b1;
+  background: #142633;
+}
+.case-quest .earned-badge > svg,
+.case-quest .earned-badge .eyebrow,
+.case-quest .badge-issued {
+  color: #9bd8ff;
+}
+.case-outcome {
+  border: 1px solid #3b5261;
+  padding: 30px;
+  border-radius: 14px;
+  background: #15232b;
+  margin: 25px 0;
+}
+.case-outcome h2,
+.case-personal-lesson h2 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 12px 0;
+}
+.case-outcome p,
+.case-personal-lesson p {
+  color: #bcd0dc;
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.case-source-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+.case-source-list a {
+  width: fit-content;
+  overflow-wrap: anywhere;
+}
+.case-personal-lesson {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+  margin: 30px 0;
+}
+.case-personal-lesson h2 {
+  margin-top: 0;
+}
+.case-cover {
+  --primary: #9bd8ff;
+  border-color: #47687b;
+  background: #16232b;
+  margin-top: 30px;
+}
+.case-cover .quest-meta,
+.case-cover .quest-checklist svg {
+  color: #9bd8ff;
+}
+.case-cover .quest-cover-copy > p {
+  color: #b9cdd9;
+}
+.case-cover .primary-action {
+  background: #9bd8ff !important;
+  color: #102332 !important;
+}
+.case-cover .quest-cover-map {
+  background: #142028;
+  padding: 30px;
+}
+.case-cover h2 {
+  font-size: 39px;
+}
+.case-cover .case-teaser {
+  width: 100%;
+}
+@media (max-width: 760px) {
+  .case-briefing-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-top: 25px;
+  }
+  .case-briefing h1 {
+    font-size: 51px;
+  }
+  .case-briefing section > .case-lead {
+    font-size: 20px;
+  }
+  .case-facts {
+    gap: 21px;
+  }
+  .case-facts strong {
+    font-size: 23px;
+  }
+  .case-cover .quest-cover-map {
+    padding: 22px;
+  }
+  .case-cover h2 {
+    font-size: 35px;
+  }
+  .case-reconstruction,
+  .case-outcome {
+    padding: 20px;
+  }
+  .case-quest .intro-line {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .case-quest .round-heading h1 {
+    font-size: 34px;
+  }
+  .case-quest .question-card {
+    padding: 24px 20px;
+  }
+  .case-quest .bottom-note {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

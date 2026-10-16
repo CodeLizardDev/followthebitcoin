@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './quest.css';
+import './case-board.css';
+import './locked-fortune.css';
 import { scenarios } from '@/lib/scenarios';
+import { caseSources, caseStages } from '@/lib/locked-fortune';
 import { siteConfig } from '@/lib/site-config';
 
 const description =
-  'Solve three payment mysteries, switch sides and learn to share less. A free, open-source Bitcoin privacy quest for beginners.';
+  'Investigate everyday payments and a real Bitcoin heist. Free, open-source privacy quests for beginners, each with a shareable badge.';
 
 export const metadata: Metadata = {
-  title: 'Follow the Bitcoin — First Clue',
+  title: 'Follow the Bitcoin — Privacy Quests',
   description,
   metadataBase: siteConfig.publicOrigin
     ? new URL(siteConfig.publicOrigin)
@@ -19,12 +22,12 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: siteConfig.name,
-    title: 'Follow the Bitcoin — First Clue',
+    title: 'Follow the Bitcoin — Privacy Quests',
     description,
   },
   twitter: {
     card: 'summary',
-    title: 'Follow the Bitcoin — First Clue',
+    title: 'Follow the Bitcoin — Privacy Quests',
     description,
   },
   referrer: 'no-referrer',
@@ -43,12 +46,13 @@ export default function RootLayout({
         {children}
         <noscript>
           <div className="reading-edition">
-            <h1>First Clue · reading edition</h1>
+            <h1>Follow the Bitcoin · reading edition</h1>
             <p>
               JavaScript is off. You can still explore every clue here,
               including in Tor Browser’s Safest mode. The interactive maps and
               PNG badge export need JavaScript.
             </p>
+            <h2>Quest 01 · First Clue</h2>
             {scenarios.map((s, index) => (
               <section key={s.id}>
                 <h2>
@@ -76,6 +80,58 @@ export default function RootLayout({
                 </details>
               </section>
             ))}
+            <h2>Quest 02 · The Locked Fortune</h2>
+            <p>
+              Almost 120,000 BTC was stolen from Bitfinex in 2016. This
+              reconstruction simplifies the investigation into three evidence
+              files. Labels and routes are illustrative; the real case involved
+              years of work and many more transactions.
+            </p>
+            {caseStages.map((stage, index) => (
+              <section key={stage.id}>
+                <h3>
+                  {index + 1}. {stage.title.replace('\n', ' ')}
+                </h3>
+                <p>{stage.story}</p>
+                <p>
+                  <strong>{stage.newWord}:</strong> {stage.definition}
+                </p>
+                <h3>{stage.question}</h3>
+                <ul>
+                  {stage.answers.map((answer) => (
+                    <li key={answer.id}>{answer.text}</li>
+                  ))}
+                </ul>
+                <details>
+                  <summary>Open the explanation</summary>
+                  <p>{stage.explanation}</p>
+                  <p>
+                    <strong>Takeaway:</strong> {stage.takeaway}
+                  </p>
+                  <p>{stage.sourceNote}</p>
+                  <a
+                    href={caseSources[stage.source].url}
+                    rel="noreferrer noopener"
+                  >
+                    Inspect the primary source
+                    {stage.source === 'affidavit' && ' (PDF)'}
+                  </a>
+                </details>
+              </section>
+            ))}
+            <p>
+              In 2023, Ilya Lichtenstein and Heather Morgan pleaded guilty to
+              money laundering conspiracy. In November 2024, Lichtenstein was
+              sentenced to five years. See the{' '}
+              <a href={caseSources.pleas.url} rel="noreferrer noopener">
+                DOJ plea announcement
+              </a>{' '}
+              and{' '}
+              <a href={caseSources.sentence.url} rel="noreferrer noopener">
+                sentencing announcement
+              </a>
+              .
+            </p>
             <p>
               No account, answers or wallet data are collected. This static
               edition has no visitor analytics. Cloudflare serves the files and
