@@ -17,10 +17,12 @@ this dashboard upload.
 
 `npm run build` includes the postbuild step that removes known build metadata,
 generates CSP response headers and audits the public output. Do not publish an
-unchecked raw framework build. The optional CLI configuration is
-`deploy/wrangler-pages.jsonc`; use it explicitly with
-`npx wrangler pages deploy --config deploy/wrangler-pages.jsonc` after separate
-operator authentication. The configuration contains no credentials.
+unchecked raw framework build. After separate operator authentication, the
+equivalent CLI upload is
+`npx --no-install wrangler pages deploy dist/client --project-name followthebitcoin --branch main`.
+Pass the static directory directly: Pages does not accept a custom `--config`
+path. This static release needs no Wrangler configuration file. Keep a root
+Wrangler configuration absent so Vinext does not select its Workers build path.
 
 The initial dashboard upload remains a valid manual recovery path. Subsequent
 updates use the GitHub Actions workflow below. A Direct Upload project cannot be

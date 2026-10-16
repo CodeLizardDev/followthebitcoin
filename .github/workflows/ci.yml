@@ -86,4 +86,4 @@ jobs:
             echo '::error::Production Cloudflare deployment secrets are not configured.'
             exit 1
           fi
-          npx --no-install wrangler pages deploy --config deploy/wrangler-pages.jsonc --project-name followthebitcoin --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=false
+          npx --no-install wrangler pages deploy dist/client --project-name followthebitcoin --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=false
