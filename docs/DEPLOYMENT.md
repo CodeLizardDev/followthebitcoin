@@ -1,7 +1,7 @@
 # Free Cloudflare Pages deployment
 
 Production: `https://followthebitcoin.pages.dev/`.
-Source: `https://github.com/CodeLizardDev/followthebitcoin`.
+Source: `https://github.com/SmartLizardOrg/followthebitcoin`.
 The site uses Cloudflare Pages' native GitHub integration. Only static browser
 assets are published: no Pages Functions, database, paid Worker or Node server.
 No purchased domain is needed.
@@ -15,7 +15,7 @@ In **Connect to a repository**, choose the repository and use these settings:
 | Setting | Value |
 | --- | --- |
 | Project name | `followthebitcoin` |
-| Repository | `CodeLizardDev/followthebitcoin` |
+| Repository | `SmartLizardOrg/followthebitcoin` |
 | Production branch | `main` |
 | Automatic production deployments | Enabled |
 | Preview deployments | None |
@@ -78,7 +78,7 @@ deployment outcome and source SHA before declaring an update live.
 
 For this existing project, use **Settings → Build → Git repository → Connect**.
 The official **Connect to a repository** dialog links the selected GitHub
-repository in place. Select `CodeLizardDev/followthebitcoin`, apply the native
+repository in place. Select `SmartLizardOrg/followthebitcoin`, apply the native
 build settings above, and verify the resulting deployment on the existing
 `followthebitcoin.pages.dev` address. Keep the current project; deletion and
 recreation are unnecessary for this flow. Preserve the checked release and
