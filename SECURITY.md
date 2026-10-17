@@ -1,10 +1,10 @@
 # Security and privacy reports
 
 Never include keys, real wallet records, private messages or visitor IP addresses
-in public issues. Use [GitHub private vulnerability reporting](https://github.com/CodeLizardDev/followthebitcoin/security/advisories/new)
+in public issues. Use [GitHub private vulnerability reporting](https://github.com/SmartLizardOrg/followthebitcoin/security/advisories/new)
 for security issues. Private reporting is enabled for this repository.
 
-Use ordinary [issues](https://github.com/CodeLizardDev/followthebitcoin/issues) for
+Use ordinary [issues](https://github.com/SmartLizardOrg/followthebitcoin/issues) for
 non-sensitive reproducible bugs. No response-time SLA is promised for this small
 volunteer project. Support targets the most recent release.
 

@@ -14,8 +14,8 @@ trail, provider identity records and recovered signing keys to earn the distinct
 PNG images with an optional native share action and a copyable quest link.
 
 Production address: **https://followthebitcoin.pages.dev/**.
-Source and reviews: **https://github.com/CodeLizardDev/followthebitcoin**.
-Community: **https://github.com/CodeLizardDev/followthebitcoin/discussions**.
+Source and reviews: **https://github.com/SmartLizardOrg/followthebitcoin**.
+Community: **https://github.com/SmartLizardOrg/followthebitcoin/discussions**.
 Playing requires no account; posting in the optional community requires GitHub.
 
 The project is brand-neutral. Quests include fictional scenarios and carefully
@@ -59,7 +59,7 @@ optional self-hosted daily counter.
 ## Free Cloudflare Pages deployment
 
 The site uses **Cloudflare Pages' native GitHub integration**, project
-`followthebitcoin`, connected to `CodeLizardDev/followthebitcoin`. Cloudflare
+`followthebitcoin`, connected to `SmartLizardOrg/followthebitcoin`. Cloudflare
 automatically checks, builds and publishes `main`; preview deployments are
 disabled. GitHub Actions separately validates pull requests and retains the
 checked static export for review. It has no publishing job or Cloudflare token.
