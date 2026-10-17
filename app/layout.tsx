@@ -9,6 +9,13 @@ import { siteConfig } from '@/lib/site-config';
 
 const description =
   'Investigate everyday payments and a real Bitcoin heist. Free, open-source privacy quests for beginners, each with a shareable badge.';
+const socialImage = {
+  url: '/brand/social-card.png',
+  width: 1200,
+  height: 630,
+  type: 'image/png',
+  alt: 'Follow the Bitcoin white rabbit logo',
+};
 
 export const metadata: Metadata = {
   title: 'Follow the Bitcoin — Privacy Quests',
@@ -17,6 +24,16 @@ export const metadata: Metadata = {
     ? new URL(siteConfig.publicOrigin)
     : undefined,
   alternates: siteConfig.publicOrigin ? { canonical: '/' } : undefined,
+  icons: {
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/brand/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
+    ],
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -24,11 +41,13 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: 'Follow the Bitcoin — Privacy Quests',
     description,
+    images: [socialImage],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Follow the Bitcoin — Privacy Quests',
     description,
+    images: [{ url: socialImage.url, alt: socialImage.alt }],
   },
   referrer: 'no-referrer',
   robots: {
@@ -46,6 +65,16 @@ export default function RootLayout({
         {children}
         <noscript>
           <div className="reading-edition">
+            {/* Static export also works with JavaScript disabled. */}
+            {/* oxlint-disable-next-line next/no-img-element */}
+            <img
+              className="reading-brand"
+              src="/brand/white-rabbit.svg"
+              alt=""
+              aria-hidden="true"
+              width={56}
+              height={56}
+            />
             <h1>Follow the Bitcoin · reading edition</h1>
             <p>
               JavaScript is off. You can still explore every clue here,

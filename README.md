@@ -1,5 +1,7 @@
 # Follow the Bitcoin
 
+<img src="public/brand/icon-192.png" width="80" height="80" alt="Follow the Bitcoin white rabbit logo">
+
 **Every payment leaves a clue. Can you uncover it?**
 
 A free, MIT-licensed Bitcoin privacy game for beginners. In **First Clue**, you
@@ -24,6 +26,9 @@ sourced reconstructions of real cases, each with its own badge. See the
 simplifications in The Locked Fortune.
 This is an independent educational project, not an official Bitcoin project or
 wallet endorsement.
+
+The white rabbit is the project's shared logo. Editable artwork and icon/share
+variants are included in the repository; see [brand assets](docs/BRANDING.md).
 
 ## Run locally
 
