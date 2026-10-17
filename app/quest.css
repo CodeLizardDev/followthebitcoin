@@ -108,6 +108,8 @@
 }
 .wordmark {
   text-decoration: none;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .brand-text {
   font-size: 14px;
@@ -122,7 +124,6 @@
 .brand-symbol {
   width: 42px;
   height: 42px;
-  font-size: 29px;
 }
 .brand-slash {
   color: var(--primary);
@@ -628,6 +629,20 @@
   font-size: 12px;
   line-height: 1.6;
 }
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.footer-brand img,
+.reading-brand {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.reading-brand {
+  margin-bottom: 18px;
+}
 .web-panel [role='tabpanel'],
 .lookup-example p {
   font-size: 16px;
@@ -724,7 +739,6 @@ body:has(.reading-edition) .site-shell {
   .brand-symbol {
     width: 32px;
     height: 32px;
-    font-size: 24px;
   }
   .wordmark {
     gap: 8px;
@@ -856,7 +870,24 @@ body:has(.reading-edition) .site-shell {
     font-size: 12px;
   }
   .brand-symbol {
-    display: none;
+    width: 30px;
+    height: 30px;
+  }
+  .site-header {
+    gap: 10px;
+  }
+  .wordmark {
+    gap: 7px;
+  }
+  .brand-text {
+    font-size: 11px;
+  }
+  .brand-text strong {
+    font-size: 20px;
+    letter-spacing: -0.7px;
+  }
+  .brand-slash {
+    margin: 0 0 0 1px;
   }
   .hub-heading h1 {
     font-size: 42px;

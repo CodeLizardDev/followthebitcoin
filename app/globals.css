@@ -100,15 +100,11 @@ p {
   font-weight: 700;
 }
 .brand-symbol {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 33px;
-  height: 33px;
-  border: 1px solid #d4f78577;
-  border-radius: 50%;
-  color: var(--primary);
-  font-size: 23px;
+  display: block;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
 }
 .brand-slash {
   color: #7c8a75;
@@ -919,9 +915,8 @@ h1 span {
     gap: 8px;
   }
   .brand-symbol {
-    width: 29px;
-    height: 29px;
-    font-size: 20px;
+    width: 32px;
+    height: 32px;
   }
   .privacy-link {
     font-size: 11px !important;

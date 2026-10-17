@@ -163,6 +163,27 @@
   border-color: #6093b1;
   background: #142633;
 }
+.earned-badge .earned-badge-marks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 0 auto 20px;
+  color: var(--primary);
+}
+.earned-badge-rabbit {
+  display: block;
+  width: 48px;
+  height: 64px;
+  object-fit: contain;
+}
+.earned-badge-mark-divider {
+  display: block;
+  width: 1px;
+  height: 36px;
+  background: currentColor;
+  opacity: 0.4;
+}
 .case-quest .earned-badge > svg,
 .case-quest .earned-badge .eyebrow,
 .case-quest .badge-issued {

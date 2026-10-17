@@ -112,11 +112,23 @@ function QuestBadgeCard({ quest }: { quest: BadgeQuest }) {
             : undefined
         }
       >
-        {isCase ? (
-          <Search size={48} strokeWidth={1.3} />
-        ) : (
-          <Award size={48} strokeWidth={1.3} />
-        )}
+        <div className="earned-badge-marks" aria-hidden="true">
+          {/* Static same-origin artwork also used by the local PNG exporter. */}
+          {/* oxlint-disable-next-line next/no-img-element */}
+          <img
+            className="earned-badge-rabbit"
+            src="/brand/white-rabbit.png"
+            width={48}
+            height={64}
+            alt=""
+          />
+          <span className="earned-badge-mark-divider" />
+          {isCase ? (
+            <Search size={48} strokeWidth={1.3} />
+          ) : (
+            <Award size={48} strokeWidth={1.3} />
+          )}
+        </div>
         <span
           className="eyebrow"
           style={isCase ? { color: badge.muted } : undefined}

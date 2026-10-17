@@ -38,12 +38,27 @@ export const badgeMetadata = {
 export const badgeName = badgeMetadata['first-clue'].name;
 export const badgeFilename = badgeMetadata['first-clue'].filename;
 
-// Self-contained drawing: no fonts, image services, wallet data or uploads.
+function loadRabbitMark(): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => {
+      if (image.naturalWidth > 0 && image.naturalHeight > 0) resolve(image);
+      else reject(new Error('The badge artwork is unavailable.'));
+    };
+    image.onerror = () => reject(new Error('The badge artwork is unavailable.'));
+    image.src = '/brand/white-rabbit.png';
+  });
+}
+
+// Drawn locally using the same-origin brand mark: no remote image service,
+// external fonts, wallet data or uploads.
 export async function createBadge(
   publicOrigin: string | null,
   quest: BadgeQuest = 'first-clue',
 ): Promise<Blob> {
   const badge = badgeMetadata[quest];
+  const rabbit = await loadRabbitMark();
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 1200;
   const c = canvas.getContext('2d');
@@ -66,6 +81,17 @@ export async function createBadge(
     c.fillText(value, 600, y, 1040);
   };
   text('FOLLOW THE BITCOIN', 155, 28, badge.accent, '700');
+  const markScale = Math.min(88 / rabbit.naturalWidth, 88 / rabbit.naturalHeight);
+  const markWidth = rabbit.naturalWidth * markScale;
+  const markHeight = rabbit.naturalHeight * markScale;
+  c.imageSmoothingQuality = 'high';
+  c.drawImage(
+    rabbit,
+    600 - markWidth / 2,
+    174 + (88 - markHeight) / 2,
+    markWidth,
+    markHeight,
+  );
   c.strokeStyle = badge.accent;
   c.lineWidth = 3;
   c.beginPath();

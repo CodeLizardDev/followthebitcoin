@@ -256,9 +256,16 @@ export default function Home() {
           className="wordmark"
           aria-label="Follow the Bitcoin — quests"
         >
-          <span className="brand-symbol" aria-hidden="true">
-            ₿
-          </span>
+          {/* Small static mark; no runtime image optimizer is needed. */}
+          {/* oxlint-disable-next-line next/no-img-element */}
+          <img
+            className="brand-symbol"
+            src="/brand/white-rabbit.svg"
+            alt=""
+            aria-hidden="true"
+            width={42}
+            height={42}
+          />
           <span className="brand-text">
             follow the
             <strong>
@@ -1002,7 +1009,17 @@ export default function Home() {
         />
       )}
       <footer className="site-footer">
-        <span>Follow the Bitcoin · Learn what your payments reveal.</span>
+        <span className="footer-brand">
+          {/* oxlint-disable-next-line next/no-img-element */}
+          <img
+            src="/brand/white-rabbit.svg"
+            alt=""
+            aria-hidden="true"
+            width={26}
+            height={26}
+          />
+          Follow the Bitcoin
+        </span>
         <div className="footer-links">
           <a href="#source">Open source</a>
           <a href="#privacy">Privacy & Tor</a>
