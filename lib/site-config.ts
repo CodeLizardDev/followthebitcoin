@@ -3,11 +3,11 @@
 export const siteConfig = {
   name: 'Follow the Bitcoin',
   publicOrigin: 'https://followthebitcoin.pages.dev' as string | null,
-  repositoryUrl: 'https://github.com/CodeLizardDev/followthebitcoin' as
+  repositoryUrl: 'https://github.com/SmartLizardOrg/followthebitcoin' as
     | string
     | null,
   communityUrl:
-    'https://github.com/CodeLizardDev/followthebitcoin/discussions' as
+    'https://github.com/SmartLizardOrg/followthebitcoin/discussions' as
       | string
       | null,
   communityProvider: 'GitHub Discussions',
