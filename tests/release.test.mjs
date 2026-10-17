@@ -65,7 +65,7 @@ test('release rejects a CSP too long for Cloudflare instead of silently weakenin
 test('public release requires HTTPS and source code while chat and onion remain optional', () => {
   const config = {
     publicOrigin: 'https://followthebitcoin.pages.dev',
-    repositoryUrl: 'https://github.com/CodeLizardDev/followthebitcoin',
+    repositoryUrl: 'https://github.com/SmartLizardOrg/followthebitcoin',
     communityUrl: null,
     onionUrl: null,
   };
